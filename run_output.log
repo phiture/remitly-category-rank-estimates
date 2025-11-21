@@ -1,0 +1,199 @@
+/Users/thomasgeorgiou/Documents/remitly-category-rank-model/category_rank_model.py:240: UserWarning: KNOWN BUG: p-values computed in this summary are likely much smaller than they should be. 
+ 
+Please do not make inferences based on these values! 
+
+Collaborate on a solution, and stay up to date at: 
+github.com/dswah/pyGAM/issues/163 
+
+  print(gam.summary())
+================================================================================
+Loading and merging data files...
+================================================================================
+Loading app_rank_downloads.csv...
+  Loaded 1531513 rows from existing file
+Loading Android ranking history...
+  Loaded 7409 rows from Android rankings
+Loading iOS ranking history...
+  Loaded 7527 rows from iOS rankings
+Loading Android download estimates...
+  Loaded 7478 rows from Android downloads
+Loading iOS download estimates...
+  Loaded 7541 rows from iOS downloads
+Merging Android data...
+  Merged Android data: 7409 rows
+Merging iOS data...
+  Merged iOS data: 7527 rows
+
+Combined US data: 14936 rows
+  Android: 7409 rows
+  iOS: 7527 rows
+================================================================================
+Cleaning data...
+================================================================================
+Final data: 14936 rows
+  Downloads range: 219 - 102406
+  Rank range: 1 - 495
+  Devices: ['android' 'iphone']
+  Date range: 2024-11-18 00:00:00 to 2025-11-18 00:00:00
+
+================================================================================
+MODEL 1: Log-Linear Regression (OLS)
+================================================================================
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                   rank   R-squared:                       0.693
+Model:                            OLS   Adj. R-squared:                  0.693
+Method:                 Least Squares   F-statistic:                 3.378e+04
+Date:                Tue, 18 Nov 2025   Prob (F-statistic):               0.00
+Time:                        15:43:21   Log-Likelihood:                -70571.
+No. Observations:               14936   AIC:                         1.411e+05
+Df Residuals:                   14934   BIC:                         1.412e+05
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+=================================================================================
+                    coef    std err          t      P>|t|      [0.025      0.975]
+---------------------------------------------------------------------------------
+Intercept       397.7877      2.011    197.785      0.000     393.845     401.730
+log_downloads   -39.3508      0.214   -183.794      0.000     -39.770     -38.931
+==============================================================================
+Omnibus:                     8375.540   Durbin-Watson:                   0.120
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):           105348.227
+Skew:                           2.449   Prob(JB):                         0.00
+Kurtosis:                      15.054   Cond. No.                         85.6
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
+Model equation: rank = 397.79 + -39.35 * log(downloads)
+
+Downloads needed for target ranks (OLS model):
+  Rank  50:     6892 downloads
+  Rank  75:     3651 downloads
+  Rank 100:     1934 downloads
+
+================================================================================
+MODEL 2: Generalized Additive Model (LinearGAM)
+================================================================================
+LinearGAM                                                                                                 
+=============================================== ==========================================================
+Distribution:                        NormalDist Effective DoF:                                     16.3739
+Link Function:                     IdentityLink Log Likelihood:                                -80035.2992
+Number of Samples:                        14936 AIC:                                           160105.3462
+                                                AICc:                                           160105.389
+                                                GCV:                                               84.4076
+                                                Scale:                                             84.2411
+                                                Pseudo R-Squared:                                   0.9653
+==========================================================================================================
+Feature Function                  Lambda               Rank         EDoF         P > x        Sig. Code   
+================================= ==================== ============ ============ ============ ============
+s(0)                              [0.6]                20           16.4         1.11e-16     ***         
+intercept                                              1            0.0          1.11e-16     ***         
+==========================================================================================================
+Significance codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+WARNING: Fitting splines and a linear function to a feature introduces a model identifiability problem
+         which can cause p-values to appear significant when they are not.
+
+WARNING: p-values calculated in this manner behave correctly for un-penalized models or models with
+         known smoothing parameters, but when smoothing parameters have been estimated, the p-values
+         are typically lower than they should be, meaning that the tests reject the null too readily.
+None
+
+Downloads needed for target ranks (GAM model):
+  Rank  10:    18591 downloads
+  Rank  20:     8991 downloads
+  Rank  50:     3830 downloads
+  Rank  75:     2630 downloads
+  Rank 100:     1850 downloads
+
+Downloads needed for top ranks (OLS model):
+  Rank  10:    19046 downloads
+  Rank  20:    14772 downloads
+
+================================================================================
+Generating plots...
+================================================================================
+Saved: model_comparison.png
+Saved: models_overlaid.png
+================================================================================
+Simulation Analysis
+================================================================================
+
+Simulation for 350 downloads:
+  Mean predicted rank: 167.12
+  Median predicted rank: 167.06
+  Std dev: 27.69
+  Probability rank ≤ 5: 0.00%
+
+Saved: rank_simulation.png
+================================================================================
+Top 10 and Top 20 Download Requirements
+================================================================================
+
+Rank ≤ 10 analysis:
+  P(rank ≤ 10) ≥ 50%: 19,050 downloads
+  P(rank ≤ 10) ≥ 70%: 27,250 downloads
+  P(rank ≤ 10) ≥ 90%: 44,850 downloads
+
+Rank ≤ 20 analysis:
+  P(rank ≤ 20) ≥ 50%: 15,050 downloads
+  P(rank ≤ 20) ≥ 70%: 21,250 downloads
+  P(rank ≤ 20) ≥ 90%: 35,050 downloads
+
+================================================================================
+Tier-level download targets from OLS + simulation
+================================================================================
+Tier 1-10, P(in tier) ≥ 50% -> None in search range
+Tier 1-10, P(in tier) ≥ 70% -> None in search range
+Tier 1-10, P(in tier) ≥ 90% -> None in search range
+Tier 11-20, P(in tier) ≥ 50% -> None in search range
+Tier 11-20, P(in tier) ≥ 70% -> None in search range
+Tier 11-20, P(in tier) ≥ 90% -> None in search range
+Tier 21-30, P(in tier) ≥ 50% -> None in search range
+Tier 21-30, P(in tier) ≥ 70% -> None in search range
+Tier 21-30, P(in tier) ≥ 90% -> None in search range
+Tier 30+, P(in tier) ≥ 50% -> 50 downloads
+Tier 30+, P(in tier) ≥ 70% -> 50 downloads
+Tier 30+, P(in tier) ≥ 90% -> 50 downloads
+
+================================================================================
+Bootstrap CIs for tier-level download targets (OLS)
+================================================================================
+Tier 1-10, P(in tier) ≥ 70%:
+  Could not find solution in search range
+Tier 11-20, P(in tier) ≥ 70%:
+  Could not find solution in search range
+Tier 21-30, P(in tier) ≥ 70%:
+  Could not find solution in search range
+Tier 30+, P(in tier) ≥ 70%:
+  median: 50, 95% CI: [50, 50]
+
+================================================================================
+Probability curves by tier
+================================================================================
+Saved: tier_probability_curves.png
+================================================================================
+Saving results to CSV files...
+================================================================================
+Saved: model_summary.csv
+Saved: target_rank_downloads.csv
+Saved: tier_download_targets.csv
+Saved: bootstrap_confidence_intervals.csv
+Saved: simulation_results.csv
+Saved: rank_target_results.csv
+Saved: tier_probability_curves_data.csv
+
+================================================================================
+Analysis complete!
+================================================================================
+
+All results have been saved to CSV files:
+  - model_summary.csv
+  - target_rank_downloads.csv
+  - tier_download_targets.csv
+  - bootstrap_confidence_intervals.csv
+  - simulation_results.csv
+  - rank_target_results.csv
+  - tier_probability_curves_data.csv
+
