@@ -1,0 +1,22 @@
+Country	Current Downloads	Top 50 Target	Top 20 Target	Top 10 Target	Top 5 Target
+
+Australia	567	274	716	986	1449
+Austria	29	35	105	152	279
+Brazil	76	767	2780	4269	6143
+Canada	1029	291	796	1112	1833
+Denmark	51	40	96	129	224
+Finland	22	18	71	112	216
+France	329	541	1505	2116	3976
+Germany	313	434	1352	1974	3308
+Ireland	66	23	68	97	200
+Italy	205	195	607	886	1742
+Mexico	291	662	2211	3306	5371
+New Zealand	95	26	91	138	240
+Norway	49	43	147	221	327
+Portugal	103	55	192	291	460
+Romania	33	47	184	289	502
+Spain	564	235	822	1248	1833
+Sweden	102	78	277	423	665
+United Arab Emirates	321	61	180	257	361
+United Kingdom (UK)	1163	701	1964	2768	4540
+United States	6813	4421	12194	17100	28314
