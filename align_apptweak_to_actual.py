@@ -123,11 +123,17 @@ def get_apptweak_downloads(platform="android", days=90, use_world_file=True):
     
     return apptweak_downloads
 
-def get_actual_downloads(platform="android", days=90, use_median=False):
+def get_actual_downloads(platform="android", days=90, use_median=False, remove_outliers=True):
     """
     Get actual console downloads.
     Uses mean by default (90-day window for stability).
     Uses last 90 days by default for more stable estimates.
+    
+    Args:
+        platform: 'android' or 'iphone'
+        days: Number of recent days to include (default 90)
+        use_median: If True, use median instead of mean
+        remove_outliers: If True, remove outliers using IQR method before calculating statistics
     """
     # Map platform names to file names
     platform_file_map = {
@@ -173,7 +179,31 @@ def get_actual_downloads(platform="android", days=90, use_median=False):
         country_code_upper = str(country_code_upper).strip()
         country_code_lower = COUNTRY_CODE_MAP.get(country_code_upper, country_code_upper.lower())
         country_data = recent_df[recent_df['country_code'] == country_code_upper][downloads_col]
+        
         if len(country_data) > 0:
+            # Remove outliers if requested
+            if remove_outliers and len(country_data) > 3:  # Need at least 4 points for IQR
+                original_count = len(country_data)
+                q1 = country_data.quantile(0.25)
+                q3 = country_data.quantile(0.75)
+                iqr = q3 - q1
+                
+                # Define outlier bounds (using 1.5 * IQR rule)
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                
+                # Filter out outliers
+                country_data_cleaned = country_data[
+                    (country_data >= lower_bound) & (country_data <= upper_bound)
+                ]
+                
+                # Only use cleaned data if we still have enough points
+                if len(country_data_cleaned) >= max(3, original_count * 0.5):  # Keep at least 50% of data
+                    outliers_removed = original_count - len(country_data_cleaned)
+                    country_data = country_data_cleaned
+                    if outliers_removed > 0:
+                        print(f"   {country_code_lower}: Removed {outliers_removed} outlier(s) (out of {original_count} total)")
+            
             if use_median:
                 actual_downloads[country_code_lower] = float(country_data.median())
             else:
@@ -287,8 +317,8 @@ def main():
         if apptweak_downloads:
             print(f"   Sample: {dict(list(apptweak_downloads.items())[:5])}")
         
-        print(f"\n2. Getting actual console downloads (90-day mean)...")
-        actual_downloads = get_actual_downloads(platform, use_median=False)
+        print(f"\n2. Getting actual console downloads (90-day mean, outliers removed)...")
+        actual_downloads = get_actual_downloads(platform, use_median=False, remove_outliers=True)
         print(f"   Found {len(actual_downloads)} markets")
         
         # Calculate adjustment factors

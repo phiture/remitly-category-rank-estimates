@@ -140,6 +140,29 @@ def get_remitly_current_downloads(platform="android", days_to_avg=90, use_actual
             country_code_lower = COUNTRY_CODE_MAP.get(country_code_upper, country_code_upper.lower())
             country_data = recent_df[recent_df['country_code'] == country_code_upper][downloads_col]
             if len(country_data) > 0:
+                # Remove outliers using IQR method before calculating mean
+                original_count = len(country_data)
+                if len(country_data) > 3:  # Need at least 4 points for IQR
+                    q1 = country_data.quantile(0.25)
+                    q3 = country_data.quantile(0.75)
+                    iqr = q3 - q1
+                    
+                    # Define outlier bounds (using 1.5 * IQR rule)
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                    
+                    # Filter out outliers
+                    country_data_cleaned = country_data[
+                        (country_data >= lower_bound) & (country_data <= upper_bound)
+                    ]
+                    
+                    # Only use cleaned data if we still have enough points
+                    if len(country_data_cleaned) >= max(3, original_count * 0.5):  # Keep at least 50% of data
+                        outliers_removed = original_count - len(country_data_cleaned)
+                        country_data = country_data_cleaned
+                        if outliers_removed > 0:
+                            print(f"    {country_code_lower}: Removed {outliers_removed} outlier(s)")
+                
                 # Use mean (90-day window for stability)
                 avg_downloads = country_data.mean()
                 remitly_downloads[country_code_lower] = float(avg_downloads)
